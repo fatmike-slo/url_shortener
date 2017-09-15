@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Url shortener</title>
+    <style>
+        body {
+            width: 800px;
+            margin: 0 auto;
+            font-family: Verdana, Geneva, Tahoma, sans-serif;
+        }
+        div {
+            padding:0px 80px 0px 80px;
+            margin-top:20px;
+        }
+        h2 {
+            text-align: center;
+        }
+
+        ul {
+
+            list-style: none;
+        }
+
+        h4 {
+
+        }
+
+        code {
+            background: #ffe6e6;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="wrapper">
+        <h2>Url shortener API</h2>
+        <p>Instructions: Pass an URL as parameter to recieve it shortened in a JSON response. The link will redirect to the
+            original URL.</p>
+        <h4>Example creation usage:</h4>
+        <ul>
+            <li><code>https://3-api-url-shortener.glitch.me/https://www.google.com</code></li>
+            <li><code>https://3-api-url-shortener.glitch.me/https://www.freecodecamp.org/challenges/url-shortener-microservice</code></li>
+        </ul>
+        <h4>Example creation output:</h4>
+        <ul>
+            <li><code>{
+"original_url": "https://en.wikipedia.org/wiki/Main_Page", <br>
+&nbsp;&nbsp;"shortened_url": "https://3-api-url-shortener.glitch.me/5s2"
+}</code></li>
+        </ul>
+        <h4>Usage:</h4>
+        <ul>
+            <li><code>https://3-api-url-shortener.glitch.me/5s2</code></li>
+        </ul>
+        <h4>Will redirect to:</h4>
+        <ul>
+            <li><code>https://en.wikipedia.org/wiki/Main_Page</code></li>
+        </ul>
+    </div>
+</body>
+
+</html>

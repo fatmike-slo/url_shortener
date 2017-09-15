@@ -1,31 +1,45 @@
-const express = require("express");
+// init project
+
+// git pull the repository so you can copy and push it again
+const express = require('express');
 const app = express();
+const bodyParser = require("body-parser");
 
-let oldUrl;
-let newUrl = "http://127.0.0.1:3000/5sz"
-
+let url = "";
+let newUrl = "https://3-api-url-shortener.glitch.me/5s1";
+// http://expressjs.com/en/starter/static-files.html
+app.use(express.static(__dirname + "/"));
 
 app.get("/favicon.ico", (req,res)=> {
-    res.status(304);
+  res.status(304);
 });
 
-app.get("/5sz", (req,res)=> {
-    res.redirect(oldUrl);
+app.get("/", (req,res)=> {
+  res.sendFile("index.html");
 });
+
+app.get("/5s1", (req,res)=> {
+  res.redirect(url);
+});
+
 
 app.get("/*", (req,res)=> {
-    let regex = /((https)|(http))\:\/\/(()|(www))|(\w+)\.[a-zA-Z.?=\/_]+/;
-    oldUrl = req.params[0];
-    console.log('url passed: ', oldUrl);
-    
-    if(regex.test(oldUrl)) {
-        res.send({
-            original_url:oldUrl,
-            shortened_url:newUrl});
+
+  // this regex will let pass almost every url (with or withour www etc). It still have to be a regualar expexted url starting with http(s);      
+  let regex = /((https)|(http))\:\/\/(()|(www))|(\w+)\.[a-zA-Z.?=\/_]+/;
+  url = req.params[0];
+  
+  if(regex.test(url)) {
+    res.send({original_url:url, shortened_url:newUrl});
     }
-    else {
-        res.send({url:"invalid"})
+  else {
+    res.send({original_url:url, shortened_url:"invalid url parameters"})
     }
 });
 
-app.listen(3000);
+
+/*   https://3-api-url-shortener.glitch.me/    */
+// listen for requests :)
+const listener = app.listen(process.env.PORT, function () {
+  console.log('Your app is listening on port ' + listener.address().port);
+});
