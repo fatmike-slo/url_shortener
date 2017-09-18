@@ -1,45 +1,132 @@
-// init project
-
-// git pull the repository so you can copy and push it again
-const express = require('express');
+const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
 
-let url = "";
-let newUrl = "https://3-api-url-shortener.glitch.me/5s1";
-// http://expressjs.com/en/starter/static-files.html
+//import dabatabase
+const UrlDb = require("./db.js");
+
+let baseUrl = "http://127.0.0.1:3000/";
+let newUrl;
+let randomString;
+
+let originalUrl;
+// 1-9 --> 49-57
+// A-Z 65-90
+// a-z 97 - 122
+
+
 app.use(express.static(__dirname + "/"));
 
-app.get("/favicon.ico", (req,res)=> {
-  res.status(304);
+app.get("/", (req, res) => {
+    res.sendFile("index.html");
 });
 
-app.get("/", (req,res)=> {
-  res.sendFile("index.html");
+app.get("/favicon.ico", (req, res) => {
+    res.status(304);
 });
 
-app.get("/5s1", (req,res)=> {
-  res.redirect(url);
+/* ---------- info routes -----------*/
+app.get("/autoDelete", (req,res)=> {
+    UrlDb.findOneAndRemove({
+    },(err)=> {
+        if(err) {
+            console.log(err);
+        }
+        res.send("data deleted")
+        console.log('data deleted');
+    });
 });
 
 
-app.get("/*", (req,res)=> {
 
-  // this regex will let pass almost every url (with or withour www etc). It still have to be a regualar expexted url starting with http(s);      
-  let regex = /((https)|(http))\:\/\/(()|(www))|(\w+)\.[a-zA-Z.?=\/_]+/;
-  url = req.params[0];
-  
-  if(regex.test(url)) {
-    res.send({original_url:url, shortened_url:newUrl});
+app.get("/auxview", (req,res)=> {
+    UrlDb.find({},(err,data)=> {
+        if(err) {
+            console.log(err);
+        }
+        res.json(data);
+    });
+});
+/* ---------------------------------- */
+
+// FIRST -- create
+app.get("/new/:getUrl(*)", (req, res) => {
+
+    function generateRndStr() {
+        let rndArr = [];
+        for (let i = 0; i < 4; i++) {
+            let num = Math.floor(Math.random() * 100 + 49);
+            if (num >= 49 && num <= 57 || num >= 65 && num <= 90 || num >= 98 && num <= 122) {
+                rndArr.push(String.fromCharCode(num));
+            }
+        }
+        return rndArr.join("");
     }
-  else {
-    res.send({original_url:url, shortened_url:"invalid url parameters"})
+    
+    let regex = /(http|https):\/\/(www|\w+)\.{0,1}[\w]+\.[A-z/]+/g;
+    originalUrl = req.params.getUrl;
+ 
+    if(regex.test(originalUrl)) {
+        randomString = generateRndStr();
+        newUrl = baseUrl + randomString;
+        // if url check passes, write to the database
+        let objToDb = new UrlDb({
+            _original_url: originalUrl,
+            _shortened_url: newUrl,
+            _shortString: randomString
+        });
+        objToDb.save((err) => {
+            if (err) {
+                console.log(err);
+            }
+            console.log('wrote to data');
+            res.redirect("/view/" + randomString);
+        });
     }
+    else {
+        res.json({
+            _original_url:originalUrl,
+            error: "The url provided is invalid"
+        });
+    }    
+});
+// SECOND -- view without _id
+app.get("/view/:randomString", (req,res, next)=> {
+
+    let passedString = req.params.randomString;
+    UrlDb.findOne({
+        _shortString: passedString
+    }, (err,data)=> {
+        if(err) {
+            console.log(err);
+        }
+        res.json({
+            original_url: data._original_url,
+            shortened_url: data._shortened_url
+        });
+    });
+});
+
+// THIRD -- redirect
+app.get("/:urlToFoward(*)", (req,res)=> {
+    
+    let paramToCheck = req.params.urlToFoward;
+    console.log('to je param ki je bil poslan: ', paramToCheck);
+    UrlDb.findOne({
+        _shortened_url:baseUrl + paramToCheck
+    }, (err, data)=> {
+        if(err) {
+            console.log(err);
+        }
+        res.redirect(data._original_url);
+    });
 });
 
 
-/*   https://3-api-url-shortener.glitch.me/    */
-// listen for requests :)
-const listener = app.listen(process.env.PORT, function () {
-  console.log('Your app is listening on port ' + listener.address().port);
-});
+
+/*
+   http://localhost:3000/new/https://en.wikipedia.org/wiki/Main_Page
+*/
+
+
+app.listen(process.env.PORT || 3000);
